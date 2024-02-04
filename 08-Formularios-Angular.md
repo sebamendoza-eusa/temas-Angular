@@ -189,7 +189,7 @@ El resto del formulario se trabajaría de forma parecida. Veámoslo a continuaci
 				Introduzca un correo electrónico válido por favor {{ email.value }}
 			</div>
 			<div *ngIf="email.errors && email.errors.pattern">
-				El correo electrónico no sigue el formato correcto. Sigue este ejemplo: anartz@mugika.com
+				El correo electrónico no sigue el formato correcto. Sigue este ejemplo: nombre@dominio.com
 				{{ email.value }}
 			</div>
 		</div>
