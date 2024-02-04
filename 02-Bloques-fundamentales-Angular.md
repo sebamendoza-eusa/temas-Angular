@@ -71,7 +71,7 @@ Organizar tu código en distintos módulos funcionales ayuda a gestionar el desa
 
 Hemos señalado los conceptos básicos acerca de los bloques de construcción de una aplicación en Angular. El siguiente diagrama muestra cómo se relacionan estos conceptos básicos.
 
-![overview](H:\Mi unidad\Classroom\DAW-EC_PRE\apuntes\overview2.png)
+![overview](H:\Mi unidad\Classroom\DAW-EC_PRE\apuntes\Angular\images\overview2.png)
 
 Vemos como:
 

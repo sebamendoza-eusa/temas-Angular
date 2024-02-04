@@ -50,7 +50,7 @@ interface IRegisterForm {
   styleUrls: ["./template-forms.component.css"]
 })
 export class TemplateFormsComponent {
-  register: IRegisterForm = {
+  registerForm: IRegisterForm = {
     name: "",
     email: "",
     password: "",
@@ -68,7 +68,7 @@ export class TemplateFormsComponent {
     console.log(this.register.repeatPass);
 
     // Controlar si el password y el password verificado son iguales
-    if (this.register.password !== this.register.repeatPass) {
+    if (this.registerForm.password !== this.registerForm.repeatPass) {
       // Emitir alerta POR NO SER IGUALES Y NO DEJAR ENVIAR DATOS
       console.log(
         "Hay que introducir las dos contraseñas iguales para validarlo"
@@ -91,7 +91,7 @@ Para crear el apartado del formulario en la plantilla, debemos de añadir lo sig
 
 ```html
 <div class="container">
-	<form (ngSubmit)="submit()" #forma="ngForm">
+	<form (ngSubmit)="submit()" #f="ngForm">
 	
 	</form>
 </div>
@@ -100,8 +100,8 @@ Para crear el apartado del formulario en la plantilla, debemos de añadir lo sig
 Hemos de tener en cuenta lo siguiente:
 
 - **ngSubmit**“ es el evento que se ejecuta cuando pulsamos el botón de submit (que todavía no está creado).
-- **#forma**: es la referencia por plantilla, donde tendremos la información de si ese formulario es válido o no
-- **“ngForm”**: Valor que se asignada a la referencia por template para usar esa clase que se encuentra dentro de `FormsModule`.
+- **#f**: Asigna una referencia local llamada `f` al formulario, lo que permite acceder a sus propiedades y métodos en el componente.
+- **“ngForm”**: Clase que se encuentra dentro de `FormsModule` y a la que se asigna el valor de la variable #f. Esta es la conexión del formulario del componente con la plantilla
 
 Ahora habría que ir trabajando los campos de manera individual. Para el nombre tendríamos:
 
@@ -233,7 +233,7 @@ El resto del formulario se trabajaría de forma parecida. Veámoslo a continuaci
 		<br>
 		<div class="row">
 			<div class="col-lg">
-				<button type="submit" [disabled]="!forma.valid" class="signup-btn">Registro</button>
+				<button type="submit" [disabled]="!f.valid" class="signup-btn">Registro</button>
 			</div>
 		</div>
 	</form>
@@ -242,7 +242,7 @@ El resto del formulario se trabajaría de forma parecida. Veámoslo a continuaci
 
 Al final de todos los campos, tenemos el elemento **“button”** de tipo **“submit”** y dentro de él tenemos la directiva `[disabled]` que hará que esté o no esté disponible, dependiendo de si el formulario es válido.
 
-Dentro de ese valor tenemos **“!forma.valid”** que querrá decir, que mientras el formulario no sea válido, se activará la directiva **“[disabled]”** y eso hace que el botón de envío no esté disponible.
+Dentro de ese valor tenemos **“!f.valid”** que querrá decir, que mientras el formulario no sea válido, se activará la directiva **“[disabled]”** y eso hace que el botón de envío no esté disponible.
 
 Cuando finalmente se envíe el formulario, se hará invocando al método `submit()` de la clase del componente. Este método gestionará las acciones sucesivas, que en nuestro caso será sacar la información enviada por consola.
 
@@ -255,42 +255,61 @@ Vamos a trabajar con el mismo ejemplo base anterior: un formulario de registro d
 Empezaremos a trabajar en el componente, que es donde más lógica vamos a implementar. El flujo de datos, la validación o su disponibilidad tendrán que insertarse aquí. El código inicial sería el siguiente más o menos:
 
 ```ts
-import { Component, OnInit } from "@angular/core";
-import { FormGroup, Validators, FormBuilder } from "@angular/forms";
+import { Component } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { RouterOutlet } from '@angular/router';
+
+import { FormsModule, ReactiveFormsModule, FormGroup, FormControl, Validators, FormBuilder} from '@angular/forms';
 
 @Component({
-  selector: "app-reactive-forms",
-  templateUrl: "./reactive-forms.component.html",
-  styleUrls: ["./reactive-forms.component.css"]
+    selector: 'app-reactive-form',
+    standalone: true,
+    imports: [CommonModule, RouterOutlet, FormsModule, ReactiveFormsModule],
+    templateUrl: './app.component.html',
+    styleUrls: ['./app.component.css']
 })
-export class ReactiveFormsComponent implements OnInit {
-  registerForm: FormGroup;
-  submitted = false;
+export class ReactiveFormComponent {
 
-  constructor(private formBuilder: FormBuilder) {}
+    registerForm: FormGroup;
 
-  ngOnInit() {
-    this.registerForm = this.formBuilder.group(
-      {
-        name: ["", Validators.required],
-        email: ["", [Validators.required, Validators.email]],
-        password: ["", [Validators.required, Validators.minLength(6)]],
-        repeatPass: ["", Validators.required]
-      },
-      {
+    submitted = false;
+
+    constructor(private formBuilder: FormBuilder) {}
+
+    registerForm = this.formBuilder.group({
+        name: ['', [Validators.required, Validators.minLength(3)]],
+        email: ['', [Validators.required, Validators.email]],
+        password: ['', Validators.required],
+        repeatPass: ['', Validators.required],
+    },
+	{
         validator: this.MustMatch("password", "repeatPass") // Validando
-      }
-    );
-  }
+    }
+	);
+
+    /* Alternativamente, si no usamos FormBuilder, podríamos haber hecho:
+
+        RegisterForm = new FormGroup({
+        name: new FormControl('', [Validators.required, Validators.minLength(3)]),
+        email: new FormControl('', [Validators.required, Validators.email]),
+        password: new FormControl('', Validators.required),
+        repeatPass: new FormControl('', Validators.required),
+    },
+    {
+        validator: this.MustMatch("password", "repeatPass") // Validando
+    }
+    ); // Y conseguiríamos el mismo resultado... */
+
+}
 ```
 
 En el código anterior pueden diferenciarse dos bloques principales.
 
 El primero corresponde a las inicializaciones principales de lo que se necesita para empezar a trabajar.
 
-- Aquí se añade la propiedad **`registerForm: FormGroup`**, es es donde tendremos todas las propiedades de todos los campos que van a componer ese formulario como aspectos de si son obligatorios, longitud mínima o tipo de campo
+- Aquí se declara la propiedad **`registerForm: FormGroup`**, que es la que englobará todas las propiedades de todos los campos que van a componer ese formulario además de aspectos como si son obligatorios, longitud mínima o tipo de campo
 - Añadimos una **propiedad `submitted`** para hacer un control de si se ha pulsado o no el botón de enviar, con idea de gestionar la información generada
-- Finalmente, en el constructor inyectamos la clase `FormBuilder`, que será la encargada de construir el formulario con sus datos por defecto y la configuración acerca de si son obligatorios o no, las validaciones u otras opciones que sean necesarias. Una vez construido, lo asignamos a `registerForm`, y así añadirlo en la plantilla del componente.
+- Finalmente, en el constructor inyectamos la clase **`FormBuilder`**, que será **la encargada de construir el formulario** con sus datos por defecto y la configuración acerca de si son obligatorios o no, las validaciones u otras opciones que sean necesarias. Una vez construido, lo asignamos a `registerForm`, y así añadirlo en la plantilla del componente.
 
 En el segundo apartado, ya más centrados en el agrupamiento de los campos, se detallan las configuraciones individuales como valor por defecto, si es requerido, tipo de dato, etc.
 
@@ -299,57 +318,62 @@ Dentro del segundo bloque de código podemos distinguir a su vez dos partes dife
 - Por un lado, los campos que compondrán el formulario. Cada uno con un apartado donde se añaden las opciones básicas: Valor por defecto, y validaciones.
 - En segundo lugar, se añaden otras opciones, en este caso una validación personalizada, como comprobar que dos contraseñas son iguales.
 
-La función que define la validación de las contraseñas se implementa más abajo como un método de clase. Veamos el código:
+La función que define la validación de las contraseñas se implementa más abajo como un método de clase. Este código puede usarse como validador personalizado siempre que se quiera comprobar que dos campos de un formulario tengan el mismo contenido. Veamos el código:
 
 ```ts
 MustMatch(controlName: string, matchingControlName: string) {
+    // La función devuelta es el validador personalizado que será utilizado por el formulario reactivo
     return (formGroup: FormGroup) => {
-      const control = formGroup.controls[controlName];
-      const matchingControl = formGroup.controls[matchingControlName];
+        // Obtener los controles de los campos que se están comparando
+        const control = formGroup.controls[controlName];
+        const matchingControl = formGroup.controls[matchingControlName];
 
-      if (matchingControl.errors && !matchingControl.errors.mustMatch) {
-        // return if another validator has already found an error on the matchingControl
-        return;
-      }
+        // Verificar si ya existe un error 'mustMatch' en matchingControl
+        if (matchingControl.errors && !matchingControl.errors.mustMatch) {
+            // Devolver si otro validador ya ha encontrado un error en matchingControl
+            return;
+        }
 
-      // set error on matchingControl if validation fails
-      if (control.value !== matchingControl.value) {
-        matchingControl.setErrors({ mustMatch: true });
-      } else {
-        matchingControl.setErrors(null);
-      }
+        // Establecer un error en matchingControl si la validación falla
+        if (control.value !== matchingControl.value) {
+            matchingControl.setErrors({ mustMatch: true });
+        } else {
+            // Eliminar el error si la validación es exitosa
+            matchingControl.setErrors(null);
+        }
     };
+}
 ```
 
-Por último, para terminar el componente, habrá que añadir tres funciones más que son necesarias para trabajar con la plantilla. El código es el siguiente:
+Por último, para terminar el componente, habrá que añadir **tres funciones más que son necesarias para trabajar con la plantilla**. El código es el siguiente:
 
 ```ts
-get form() {
+get f() {
     return this.registerForm.controls;
-  }
+}
 
 onSubmit() {
-	this.submitted = true;
+    this.submitted = true;
 
-// stop here if form is invalid
-	if (this.registerForm.invalid) {
-  		return;
-	}
+    // No enviar si el formulario no está correctamente validado
+    if (this.registerForm.invalid) {
+        return;
+    }
 
-    // display form values on success
+    // Qué hacer si la validación es correcta
     alert(
-      "SUCCESS!! :-)\n\n" + JSON.stringify(this.registerForm.value, null, 4)
+        "SUCCESS!! :-)\n\n" + JSON.stringify(this.registerForm.value, null, 4)
     );
 }
 
 onReset() {
-	this.submitted = false;
-	this.registerForm.reset();
+    this.submitted = false;
+    this.registerForm.reset();
 }
 ```
 
-- **`get form()`**: Es un *getter* que se usa para simplificar la propiedad del formulario de registro cuando se vaya a usar en el control de los diferentes campos. Así se consigue que, en la plantilla, **en vez de escribir *registerForm.controls*, con *form*, se tenga el mismo resultado**.
-- **`onSubmit()`**: Función donde se controla la validez del formulario. En el caso de ser válido, se seguirá hacia delante para enviar los datos al backend.
+- **`get f()`**: Es un *getter* que se usa para simplificar la propiedad del formulario de registro cuando se vaya a usar en el control de los diferentes campos. Así se consigue que, en la plantilla, **en vez de escribir *registerForm.controls*, con *f*, se tenga el mismo resultado**.
+- **`onSubmit()`**: Función donde se controla el envío del formulario. En el caso de ser válido, se seguirá hacia delante para enviar los datos al backend.
 - **`onReset()`**: Resetea el formulario.
 
 Llegados a este punto podemos centrar ahora el trabajo **en la plantilla del componente**.  Se trata de elaborar una estructura base visual del formulario.
@@ -358,55 +382,58 @@ El código de la plantilla sería el siguiente:
 
 ```html
 <div class="container">
-    
-	<form (ngSubmit)="onSubmit()" [formGroup]="registerForm">
 
-		<h3>Inicio de sesión - Formulario reactivo</h3>
-        
-		<label>Nombre</label>
-		<input type="text" formControlName="name" class="form-control" [ngClass]="{ 'is-invalid': form.name.errors }" />
-		<div *ngIf="form.name.errors" class="invalid-feedback">
-			<div *ngIf="form.name.errors.required">El nombre es obligatorio</div>
-		</div>
-        
-		<label>Email</label>
-		<input type="text" formControlName="email" class="form-control" [ngClass]="{ 'is-invalid': form.email.errors }" />
-		<div *ngIf="form.email.errors" class="invalid-feedback">
-			<div *ngIf="form.email.errors.required">El email es obligatorio</div>
-			<div *ngIf="form.email.errors.email">El email debe de ser válido</div>
-		</div>
+  <form (ngSubmit)="Submit()" [formGroup]="registerForm">
 
-		<label>Contraseña</label>
-		<input type="password" formControlName="password" class="form-control" [ngClass]="{ 'is-invalid': form.password.errors }" />
-		<div *ngIf="form.password.errors" class="invalid-feedback">
-			<div *ngIf="form.password.errors.required">Se requiere una contraseña</div>
-			<div *ngIf="form.password.errors.minlength">La contraseña tiene que tener al menos 6 caracteres</div>
-		</div>
+    <h3>Inicio de sesión - Formulario reactivo</h3>
 
-		<label>Repetir contraseña</label>
-		<input type="password" formControlName="repeatPass" class="form-control" [ngClass]="{ 'is-invalid': form.repeatPass.errors }" />
-		<div *ngIf="form.repeatPass.errors" class="invalid-feedback">
-			<div *ngIf="form.repeatPass.errors.required">Es necesario repetir contraseña</div>
-			<div *ngIf="form.repeatPass.errors.mustMatch">Las contraseñas deben de coincidir</div>
-		</div>
-		<div class="text-center">
-			<button class="btn btn-primary mr-1" [disabled]="registerForm.invalid">Registro</button>
-			<button class="btn btn-secondary" type="reset" (click)="onReset()">Cancelar</button>
-		</div>
-	</form>
+    <label>Nombre</label>
+    <input type="text" formControlName="name" class="form-control" [ngClass]="{ 'is-invalid': f.name.errors }" />
+    <div *ngIf="f.name.errors" class="invalid-feedback">
+      <div *ngIf="f.name.errors.required">El nombre es obligatorio</div>
+    </div>
+
+    <label>Email</label>
+    <input type="text" formControlName="email" class="form-control" [ngClass]="{ 'is-invalid': f.email.errors }" />
+    <div *ngIf="f.email.errors" class="invalid-feedback">
+      <div *ngIf="f.email.errors.required">El email es obligatorio</div>
+      <div *ngIf="f.email.errors.email">El email debe de ser válido</div>
+    </div>
+
+    <label>Contraseña</label>
+    <input type="password" formControlName="password" class="form-control" [ngClass]="{ 'is-invalid': f.password.errors }" />
+    <div *ngIf="f.password.errors" class="invalid-feedback">
+      <div *ngIf="f.password.errors.required">Se requiere una contraseña</div>
+      <div *ngIf="f.password.errors.minlength">La contraseña tiene que tener al menos 6 caracteres</div>
+    </div>
+
+    <label>Repetir contraseña</label>
+    <input type="password" formControlName="repeatPass" class="form-control" [ngClass]="{ 'is-invalid': f.repeatPass.errors }" />
+    <div *ngIf="f.repeatPass.errors" class="invalid-feedback">
+      <div *ngIf="f.repeatPass.errors.required">Es necesario repetir contraseña</div>
+      <div *ngIf="f.repeatPass.errors.mustMatch">Las contraseñas deben de coincidir</div>
+    </div>
+
+    <div class="text-center">
+      <button class="btn btn-primary mr-1" [disabled]="registerForm.invalid">Registro</button>
+
+      <button class="btn btn-secondary" type="reset" (click)="onReset()">Cancelar</button>
+
+    </div>
+  </form>
 </div>
 ```
 
 Vamos a comentar el código anterior:
 
 - **Selector `form`**: Se añade como en el caso del formulario basado en plantilla, pero se usa el enlace de propiedad para vincular con la propiedad `registerForm` del componente.
-- **Evento `ngSubmit `**: Funcionará igual que en el caso del formulario basado en plantillas.
+- **Evento `ngSubmit `**: Funcionará igual que en el caso del formulario basado en plantillas. Escucha el evento de envío del formulario y llama al método `Submit()` cuando se envía el formulario.
 - **Botones de registro y cancelar**: Funcionan igual que en el ejemplo por plantillas
 - **Apartados para los distintos campos**: Se desarrollan uno a uno, comenzando por el campo `name`. Comentemos este caso de forma más detallada, ya que los demás bloques son similares. En el `input` tenemos varios elementos que tenemos que analizar. Todos los elementos excepto `formControlName` los conocemos de usarlos en el formulario por plantilla:
   - **`type`**: Puede ser un campo de texto (text), de tipo email,…
-  - **`formControlName`**: Nombre que hemos asignado en el componente, dentro de los campos. Importante escribirlo igual, respetando minúsculas y mayúsculas.
+  - **`formControlName`**: Nombre que usamos para asociar con el control del formulario reactivo correspondiente. Importante escribirlo igual, respetando minúsculas y mayúsculas.
   - **`class`**: Usamos la clase `form-control` para aplicar a los controles de formulario. Se trabaja con Bootstrap.
-  - **`[ngClass]`**: Se asigna clase válida o inválida, dependiendo de si es válido o no ese campo.
+  - **`[ngClass]`**: Es una clase dinámica de Bootstrap. Agrega la clase `is-invalid` de Bootstrap si hay errores en el campo.
 - **Apartados de *feedback* de los errores**: Se trata de mostrar el error (o errores) en el caso de no ser correcto el valor. Por ejemplo, en el caso del email, se tiene que cumplir que se ha escrito algo y que sea de tipo email, si no, nos dará un error.
 
 En el caso que introduzcamos todos los datos y se validen correctamente ya se activará el botón con la opción de *Registro*. En ese momento que hacemos click, se accederá al componente a las acciones subsiguientes. En este caso la de mostrar un `alert` con la información del registro, que a su vez, podríamos enviar al backend correspondiente.
