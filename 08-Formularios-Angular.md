@@ -259,46 +259,29 @@ import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterOutlet } from '@angular/router';
 
-import { FormsModule, ReactiveFormsModule, FormGroup, FormControl, Validators, FormBuilder} from '@angular/forms';
+import { FormsModule, ReactiveFormsModule, FormGroup, FormControl, Validators} from '@angular/forms';
 
 @Component({
-    selector: 'app-reactive-form',
-    standalone: true,
-    imports: [CommonModule, RouterOutlet, FormsModule, ReactiveFormsModule],
-    templateUrl: './app.component.html',
-    styleUrls: ['./app.component.css']
+  selector: 'app-reactive-form',
+  standalone: true,
+  imports: [CommonModule, RouterOutlet, FormsModule, ReactiveFormsModule],
+  templateUrl: './app.component.html',
+  styleUrls: ['./app.component.css']
 })
 export class ReactiveFormComponent {
 
-    registerForm: FormGroup;
+  submitted = false;
 
-    submitted = false;
-
-    constructor(private formBuilder: FormBuilder) {}
-
-    registerForm = this.formBuilder.group({
-        name: ['', [Validators.required, Validators.minLength(3)]],
-        email: ['', [Validators.required, Validators.email]],
-        password: ['', Validators.required],
-        repeatPass: ['', Validators.required],
-    },
-	{
-        validator: this.MustMatch("password", "repeatPass") // Validando
-    }
-	);
-
-    /* Alternativamente, si no usamos FormBuilder, podríamos haber hecho:
-
-        RegisterForm = new FormGroup({
-        name: new FormControl('', [Validators.required, Validators.minLength(3)]),
-        email: new FormControl('', [Validators.required, Validators.email]),
-        password: new FormControl('', Validators.required),
-        repeatPass: new FormControl('', Validators.required),
-    },
-    {
-        validator: this.MustMatch("password", "repeatPass") // Validando
-    }
-    ); // Y conseguiríamos el mismo resultado... */
+  registerForm = new FormGroup({
+    name: new FormControl('', [Validators.required, Validators.minLength(3)]),
+    email: new FormControl('', [Validators.required, Validators.email]),
+    password: new FormControl('', Validators.required),
+    repeatPass: new FormControl('', Validators.required),
+  },
+  {
+    validator: this.mustMatch('password', 'repeatPass')
+  },
+  );
 
 }
 ```
@@ -307,15 +290,13 @@ En el código anterior pueden diferenciarse dos bloques principales.
 
 El primero corresponde a las inicializaciones principales de lo que se necesita para empezar a trabajar.
 
-- Aquí se declara la propiedad **`registerForm: FormGroup`**, que es la que englobará todas las propiedades de todos los campos que van a componer ese formulario además de aspectos como si son obligatorios, longitud mínima o tipo de campo
-- Añadimos una **propiedad `submitted`** para hacer un control de si se ha pulsado o no el botón de enviar, con idea de gestionar la información generada
-- Finalmente, en el constructor inyectamos la clase **`FormBuilder`**, que será **la encargada de construir el formulario** con sus datos por defecto y la configuración acerca de si son obligatorios o no, las validaciones u otras opciones que sean necesarias. Una vez construido, lo asignamos a `registerForm`, y así añadirlo en la plantilla del componente.
+- Se añade la **propiedad `submitted`** para hacer un control de si se ha pulsado o no el botón de enviar, con idea de gestionar la información generada
 
 En el segundo apartado, ya más centrados en el agrupamiento de los campos, se detallan las configuraciones individuales como valor por defecto, si es requerido, tipo de dato, etc.
 
 Dentro del segundo bloque de código podemos distinguir a su vez dos partes diferenciadas:
 
-- Por un lado, los campos que compondrán el formulario. Cada uno con un apartado donde se añaden las opciones básicas: Valor por defecto, y validaciones.
+- Por un lado, los campos que compondrán el formulario. Cada uno con un apartado donde se añaden las opciones básicas: Valor por defecto, y validaciones. Vemos como la propiedad `registerForm` se crea a partir de una instancia de `FormGroup`, a la que vamos añadiendo controles del formulario a través de la clase `FormControl`
 - En segundo lugar, se añaden otras opciones, en este caso una validación personalizada, como comprobar que dos contraseñas son iguales.
 
 La función que define la validación de las contraseñas se implementa más abajo como un método de clase. Este código puede usarse como validador personalizado siempre que se quiera comprobar que dos campos de un formulario tengan el mismo contenido. Veamos el código:
@@ -349,26 +330,26 @@ Por último, para terminar el componente, habrá que añadir **tres funciones m�
 
 ```ts
 get f() {
-    return this.registerForm.controls;
+  return this.registerForm.controls;
 }
 
 onSubmit() {
-    this.submitted = true;
+  this.submitted = true;
 
-    // No enviar si el formulario no está correctamente validado
-    if (this.registerForm.invalid) {
-        return;
-    }
+  // No enviar si el formulario no está correctamente validado
+  if (this.registerForm.invalid) {
+    return;
+  }
 
-    // Qué hacer si la validación es correcta
-    alert(
-        "SUCCESS!! :-)\n\n" + JSON.stringify(this.registerForm.value, null, 4)
-    );
+  // Qué hacer si la validación es correcta
+  alert(
+    "SUCCESS!! :-)\n\n" + JSON.stringify(this.registerForm.value, null, 4)
+  );
 }
 
 onReset() {
-    this.submitted = false;
-    this.registerForm.reset();
+  this.submitted = false;
+  this.registerForm.reset();
 }
 ```
 
@@ -383,7 +364,7 @@ El código de la plantilla sería el siguiente:
 ```html
 <div class="container">
 
-  <form (ngSubmit)="Submit()" [formGroup]="registerForm">
+  <form (ngSubmit)="onSubmit()" [formGroup]="registerForm">
 
     <h3>Inicio de sesión - Formulario reactivo</h3>
 
