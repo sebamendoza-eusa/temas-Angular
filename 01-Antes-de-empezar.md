@@ -77,7 +77,7 @@ Las plantillas HTML se pueden definir como una plantilla en línea dentro de la 
 
 ### Representación de datos dinámicos
 
-Cuando necesita mostrar contenido dinámico en su plantilla, **Angular utiliza la sintaxis de doble llave para distinguir entre contenido estático y dinámico**.
+Cuando se necesita mostrar contenido dinámico en la plantilla, entre otros, **Angular utiliza la sintaxis de doble llave para distinguir entre contenido estático y dinámico**.
 
 ```ts
 @Component({
@@ -102,13 +102,13 @@ En este ejemplo, la propiedad *disabled* está vinculada a la variable que Angul
 
 ### Control de eventos
 
-Puede enlazar agentes de escucha de eventos especificando el nombre del evento entre paréntesis e invocando un método en el lado derecho del signo igual:
+Se pueden enlazar manejadores de eventos especificando el nombre del evento entre paréntesis e invocando un método de la clase en el lado derecho del signo igual:
 
 ```html
 <button (click)="saveChanges()">Save Changes</button>
 ```
 
-Si necesita pasar el objeto de evento a su detector de eventos, Angular proporciona una variable implícita que se puede usar dentro de la llamada de función:`$event`
+En ocasiones es interesante pasar el objeto asociado al evento como parámetro del método que se dispara. Angular proporciona una variable implícita que se puede usar dentro de la llamada de función que se denomina `$event`
 
 ```html
 <button (click)="saveChanges($event)">Save Changes</button>

@@ -26,22 +26,19 @@ Es posible crear componentes sin Angular CLI, pero esta herramienta facilita muc
 
 Podemos iniciar un proyecto Angular de dos formas:
 
-- Se puede descargar un proyecto desde un repositorio que ya esté configurado e instalar las dependencias necesarias
-- Se puede iniciar un proyecto desde cero desde nuestra propia máquina. Para ello podemos optar por una de las dos opciones siguientes:
+- Se puede descargar un proyecto desde un repositorio que ya esté configurado e instalar las dependencias necesarias. Para ello tendremos que ejecutar desde la consola
 
-Desde la carpeta que hemos elegido para albergar nuestro proyecto de Angular hacemos
+  ```javascript
+  npm install
+  ```
 
-```powershell
-npm init @angular myApp
-```
+- También se puede iniciar un proyecto desde cero desde nuestra propia máquina. Para ello podemos haríamos lo siguiente:
 
-Con npm se instalara una versión del Angular CLI necesaria para poner en marcha el proyecto directamente
+  ```powershell
+  ng new my-app
+  ```
 
-```powershell
- ng new my-app
-```
-
-Con esta última forma se usa directamente el Angular CLI que ya se ha instalado. **Esta es la forma recomendable**, aunque ambas, al final, van a llegar al mismo lado. Con esta configuración, por defecto se creará un componente *standalone*. Si quisiéramos desarrollar un componente en la versión tradicional tendríamos que usar la opción `--standalone false`. Recordemos que desde la versión 16, Angular por puede trabajar proyectos  sin módulos (modo *moduleless*)
+Con esta última forma se usa directamente el Angular CLI que ya se ha instalado. Con esta configuración, por defecto se creará un componente *standalone*. Si quisiéramos desarrollar un componente en la versión tradicional tendríamos que usar la opción `--standalone false`. Recordemos que desde la versión 16, Angular por puede trabajar proyectos  sin módulos (modo *moduleless*)
 
 En la inicialización del proyecto se nos harán preguntas acerca de las características que queremos implementar en él. Una vez hechas las elecciones se instalarán los archivos necesarios.
 
@@ -97,43 +94,49 @@ Se describen a continuación el resto de directorios que tenemos en el proyecto:
 
 `node_modules` es una carpeta que contiene los módulos de Node.js necesarios para mantener el proyecto. . También son ignorados en el git porque no forman del proyecto respaldado en sí mismo. Todos estos módulos se reconstruyen cuando en el servidor se instalen las dependencias y se inicialice el proyecto en producción.
 
-## Primera aplicación con Angular. El app.component
+## Primera aplicación con Angular. El *app.component*
 
-El componente raíz se encuentra dentro de la carpeta `src`. Está formado por los cuatro archivos `app.component.*`. Con cada uno de ellos trabajaremos un aspecto del componente.
+Cuando generamos un nuevo proyecto con Angular, se crea un componente raíz que se ubica dentro de la carpeta `src`. Está formado por los cuatro archivos `app.component.*`. Con cada uno de ellos trabajaremos un aspecto del componente.
 
 Podemos cambiar el contenido del HTML y veremos reflejados los cambios inmediatamente.
 
 Es interesante ver como se conectan el fichero .ts y el .html. Para ello basta insertar una propiedad (*prop*) definida en la clase `AppComponent`, dentro del código HTML colocándola entre llaves `{{ prop }}` 
 
-Comencemos con un componente muy sencillo. **Un contador que aumente o disminuya de valor al pulsar en el botón correspondiente**. Bastaría definir el HTML correspondiente, añadiendo los elementos necesarios. Concretamente habría que definir dos botones.
+Comencemos con un componente muy sencillo. **Un contador que aumente o disminuya de valor al pulsar en el botón correspondiente**. Bastaría definir en la clase del componente `app.component.ts` las propiedades y métodos necesarios. Podría ser algo como esto:
+
+```ts
+export class AppComponent {
+  public titulo: string = 'Contador en Angular';
+  public contador: number = 20;
+  incrementaContador(): void {
+    this.contador += 1;
+  } 
+  decrementaContador(): void {
+    this.contador -= 1;
+  } 
+}
+```
+Vemos como en la clase `AppComponent` se declaran los métodos y las propiedades correspondientes. Recuerda que toda la lógica del componente se reduce a una clase una clase: Todo son propiedades y métodos.
+
+
+En el archivo `app.component.html` se definiría la plantilla HTML correspondiente, a la que añadiríamos los elementos necesarios. Concretamente habría que insertar el título, la propiedad contador y unos botones que modifiquen la propiedad. Al final tendríamos algo así:
+
 
 ```html
+<h1>{{ titulo }}</h1>
+<h2>{{ contador }}</h2>
+<hr>
 <button>+1</button>
 <button>-1</button>
 ```
 
-Por otro lado, en la clase `AppComponent` habría que declarar los métodos correspondientes. Recuerda que toda la lógica del componente se reduce a una clase una clase: Todo son propiedades y métodos.
-
-```ts
-export class AppComponent {
-  public title: string = 'Contador en Angular';
-  public counter: number = 20;
-  incrementaContador(): void {
-    this.counter += 1;
-  } 
-  decrementaContador(): void {
-    this.counter -= 1;
-  } 
-}
-```
-
-Por último habría que conectar los eventos de los botones (*click*) con los métodos.
+A este fichero bastaría con añadir los eventos (*click*) asociados a los botones y conectarlos con los métodos. Para ello haríamos estos cambios.
 
 ```html
 <button (click)="incrementaContador()">+1</button>
 <button (click)="decrementaContador()">-1</button>
 ```
 
-Al final tendríamos el componente deseado.
+Con lo que al final tendríamos el resultado deseado.
 
-A partir de aquí podemos hacer variaciones interesantes para ir entendiendo la dinámica de la conexión entre la clase `appComponent` y el resto de ficheros. Por ejemplo, prueba a añadir un botón que resetee el contador...
+A partir de aquí podemos hacer variaciones interesantes para ir entendiendo la dinámica de la conexión entre la clase `appComponent` y el resto de ficheros. Por ejemplo, prueba a añadir un botón que resetee el contador, cambios en los estilos .css de forma dinámica, etc.

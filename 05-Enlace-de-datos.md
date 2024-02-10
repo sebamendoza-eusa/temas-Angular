@@ -24,13 +24,13 @@ También cabe la posibilidad de utilizar la interpolación como valor en propied
 
 El *property binding* es una herramienta poderosa en Angular que nos permite **mantener sincronizadas las propiedades de un componente con las propiedades de elementos del DOM**, facilitando así la creación de aplicaciones dinámicas e interactivas.
 
-Para establecer un enlace de propiedad situamos entre corchetes la propiedad del selector HTML en cuestión y la igualamos al atributo de la clase del componente que deseemos. El enlace se establecerá de forma dinámica. Por ejemplo:
+Para establecer un enlace de propiedad situamos entre corchetes la propiedad del selector HTML en cuestión y la igualamos a la propiedad o método de la clase del componente correspondiente. El enlace se establecerá de forma dinámica. Por ejemplo:
 
 ```html
 <input type="text" [value]="nombre">
 ```
 
-mostrará el valor del atributo `nombre` de la clase del componente en el contenido del elemento de texto del formulario. Si el atributo cambia, también lo hará el texto del cuadro del formulario.
+mostrará el valor de la propiedad `nombre` de la clase del componente en el contenido del elemento de texto del formulario. Si el atributo cambia, también lo hará el texto del cuadro del formulario.
 
 El enlace de propiedad tiene una similitud muy grande con la interpolación y ciertamente pueden usarse indistintamente. Cuando se quiere representar valores de datos como cadenas, no hay razón técnica para preferir una forma a la otra, aunque la legibilidad tiende a favorecer la interpolación. Sin embargo, **cuando queramos establecer un elemento a un valor de datos que no sea de cadena, debe usarse el *property binding***.
 
@@ -58,8 +58,7 @@ La sintaxis de un enlace bidireccional es `[( ... )]` y combina los corchetes de
 Un caso de uso habitual del enlace bidireccional es el la directiva `NgModel`. Esta directiva permite mostrar un atributo y actualizarlo cuando el usuario hace determinados cambios. Por ejemplo:
 
 ```html
-<label for="example-ngModel">[(ngModel)]:</label>
-<input [(ngModel)]="currentItem.name" id="example-ngModel">
+
 ```
 
 Puede verse más profundamente este concepto en el apartado de formularios con Angular
