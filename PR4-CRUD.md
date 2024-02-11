@@ -100,7 +100,7 @@ export class PostService {
 
 8. **Primero desarrolla el componente que se encarga del listado de posts**. La plantilla del componente tendrá que tener un aspecto parecido a esto
 
-![image-20240204191400841](H:\Mi unidad\Classroom\DAW-EC_PRE\practicas-angular\image-20240204191400841.png)
+![image-20240204191400841](./images/image-20240204191400841.png)
 
 9. En la plantilla tendrás que usar directivas de bucle para construir la tabla. Por otro lado, ten en cuenta que los botones de vista y de edición son **links** a otros componentes. Lo mismo se aplica al botón de creación de post nuevo.
 
@@ -147,7 +147,7 @@ import { ReactiveFormsModule, FormGroup, FormControl, Validators } from '@angula
 
 13. En cuanto a la plantilla, tendríamos que conseguir algo como esto:
 
-![image-20240204194801281](H:\Mi unidad\Classroom\DAW-EC_PRE\practicas-angular\image-20240204194801281.png)
+![image-20240204194801281](./images/image-20240204194801281.png)
 
 14. Puedes usar un código parecido a este para el formulario en la plantilla. Esto es solo una muestra para un campo (`nombreCampo`). Intenta hacer tú el resto:
 
@@ -171,7 +171,7 @@ import { ReactiveFormsModule, FormGroup, FormControl, Validators } from '@angula
 19. El último componente del que habrá que ocuparse es el **componente de visualización del post**. En este caso, el componente tendrá una lógica muy parecida a la del componente de edición, sólo que más sencilla, en tanto que no hay que incorporar la funcionalidad de escritura en la base de datos.
 20. En cuanto a la plantilla, no plantea especial complicación ya que sólo hay que pasar las variables correspondientes para que se visualicen. El resultado podría ser más o menos así:
 
-![image-20240204201845300](H:\Mi unidad\Classroom\DAW-EC_PRE\practicas-angular\image-20240204201845300.png) 
+![image-20240204201845300](./images/image-20240204201845300.png) 
 
 ## Mejoras
 
