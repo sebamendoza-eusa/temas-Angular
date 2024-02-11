@@ -11,7 +11,7 @@ Tanto los formularios reactivos como los formularios basados en plantillas proce
 
 | Enfoque               | Detalles                                                     |
 | :-------------------- | :----------------------------------------------------------- |
-| Reactivos             | Proporcionan acceso directo y explícito al modelo de objetos del formulario subyacente. En comparación con los formularios basados en plantillas, son más robustos: son más escalables, reutilizables y comprobables. Si los formularios son una parte clave de la aplicación, o si ya está usando patrones reactivos para compilar la aplicación, mejor usar formularios reactivos. |
+| Reactivos             | Proporcionan acceso directo y explícito al modelo de objetos del formulario subyacente. En comparación con los formularios basados en plantillas, son más robustos: son más escalables, reutilizables y validables. Son los más indicados si los formularios son una parte clave de la aplicación, o si ya se están usando patrones reactivos para compilar la aplicación. |
 | Basados en plantillas | Confían en las directivas para crear y manipular el modelo de objetos subyacente de modo implícito. Son útiles para agregar un formulario simple a una aplicación, como por ejemplo un formulario de registro de lista de correo electrónico. Son fáciles de agregar a una aplicación, pero no se escalan tan bien como los formularios reactivos. Si los requisitos del formulario son muy básicos y la lógica se puede administrar en la plantilla, los formularios basados en plantillas son una buena opción. |
 
 En la tabla siguiente se resumen las principales diferencias entre los formularios reactivos y los basados en plantillas.
@@ -250,9 +250,15 @@ Cuando finalmente se envíe el formulario, se hará invocando al método `submit
 
 Una vez que hemos trabajado en los formularios controlados por plantillas donde la mayor parte de la interacción se producía en la plantilla, vamos a usar el enfoque reactivo, en el cual **la mayor parte de la interacción se produce en el componente**.
 
+Los **formularios reactivos** en Angular también se conocen como **formularios dirigidos por modelos**, los formularios **se diseñan en el componente** (usando `FormBuilder` y el método `group`) y luego se realizan los enlaces para el HTML usando la inyección de dependencias en el constructor.
+
 Vamos a trabajar con el mismo ejemplo base anterior: un formulario de registro de un usuario.
 
-Empezaremos a trabajar en el componente, que es donde más lógica vamos a implementar. El flujo de datos, la validación o su disponibilidad tendrán que insertarse aquí. El código inicial sería el siguiente más o menos:
+Empezaremos a trabajar en el componente, que es donde más lógica vamos a implementar. El flujo de datos, la validación o su disponibilidad tendrán que insertarse aquí. 
+
+Lo primero es importar el módulo `ReactiveFormsModule` en el archivo de componente. Tras ello, en la clase del componente crearemos un ***FormGroup*** con un ***FormControl*** por cada campo. Un *FormControl* es un objeto que se usa en los formularios **para tener un control sobre su valor**. Un *FormGroup* es un conjunto de *FormControls*, **en el caso de que uno de los *FormControl* sea inválido todo el grupo lo será.**
+
+Para el ejemplo que se ha trabajado en el apartado anterior, el código inicial del componente sería el siguiente más o menos:
 
 ```ts
 import { Component } from '@angular/core';
@@ -279,7 +285,7 @@ export class ReactiveFormComponent {
     repeatPass: new FormControl('', Validators.required),
   },
   {
-    validator: this.mustMatch('password', 'repeatPass')
+    validator: this.validateMustMatch('password', 'repeatPass')
   },
   );
 
@@ -290,40 +296,70 @@ En el código anterior pueden diferenciarse dos bloques principales.
 
 El primero corresponde a las inicializaciones principales de lo que se necesita para empezar a trabajar.
 
-- Se añade la **propiedad `submitted`** para hacer un control de si se ha pulsado o no el botón de enviar, con idea de gestionar la información generada
+- Se añade la **propiedad `submitted`** para controlar si se ha pulsado o no el botón de enviar, con idea de gestionar la información generada
 
-En el segundo apartado, ya más centrados en el agrupamiento de los campos, se detallan las configuraciones individuales como valor por defecto, si es requerido, tipo de dato, etc.
+En el segundo apartado, ya más centrados en el agrupamiento de los campos, se detallan las configuraciones individuales como valor por defecto, si es requerido o no,  el tipo de dato, etc.
 
-Dentro del segundo bloque de código podemos distinguir a su vez dos partes diferenciadas:
+En este segundo bloque de código podemos distinguir a su vez dos partes diferenciadas:
 
 - Por un lado, los campos que compondrán el formulario. Cada uno con un apartado donde se añaden las opciones básicas: Valor por defecto, y validaciones. Vemos como la propiedad `registerForm` se crea a partir de una instancia de `FormGroup`, a la que vamos añadiendo controles del formulario a través de la clase `FormControl`
-- En segundo lugar, se añaden otras opciones, en este caso una validación personalizada, como comprobar que dos contraseñas son iguales.
 
-La función que define la validación de las contraseñas se implementa más abajo como un método de clase. Este código puede usarse como validador personalizado siempre que se quiera comprobar que dos campos de un formulario tengan el mismo contenido. Veamos el código:
+  A veces, crear instancias de control de formularios de forma manual puede volverse repetitivo cuando se trata de muchos formularios. El servicio ***FormBuilder*** proporciona métodos más convenientes para generar controles. Para poder utilizarlo lo importaremos de **“@angular/forms”**. Si añadimos *FomrBuilder* ya no necesitaremos tener importado FormControl. Para crear un formulario inyectaremos *formbuilder* en el constructor y cambiaremos la forma de crear los controles. *FormBuilder* no añade ninguna funcionalidad, pero sirve para simplificar el código y es útil cuando hay que montar muchos formularios. Veamos este módulo en acción:
+
+  ```ts
+  registerForm = new FormGroup({
+    name: new FormControl('', [Validators.required, Validators.minLength(3)]),
+    email: new FormControl('', [Validators.required, Validators.email]),
+    password: new FormControl('', Validators.required),
+    repeatPass: new FormControl('', [Validators.required, this.mustMatch]),
+  })
+  
+  // Se sustituiría por
+  
+  constructor(private _fb: FormBuilder) {}
+  
+  this.registerForm = this._fb.group(
+    {
+      name: ['', [Validators.required, Validators.minLength(3)]],
+      email: ['', [Validators.required, Validators.email]],
+      password: ['', [Validators.required]],
+      repeatPass: ['', [Validators.required, Validators.minLength(8)]],
+    },
+    {
+      validator: this.mustMatch('password', 'repeatPass'),
+    }
+  );
+  
+  ```
+
+La validación de los formularios reactivos se realiza a través de *validadores*. Para ello lo primero es importar el módulo *Validators*. A partir de ahí se pueden usar validaciones que vienen por defecto incorporadas en el módulo o crear personalizadas.
+
+Para implementar las validaciones por defecto bastará con añadirlas como parámetros de los *FormControl* que creamos anteriormente, es importante resaltar que podemos añadir más de una validación al control, pero en ese caso los tendremos que añadir en formato de array. Hay diferentes tipos de validadores ya implementados, entre otros podemos citar:
+
+- ***Required***: comprueba que el control no este vacío.
+- ***Email***: comprueba que el control tenga un formato de email valido.
+- ***Min***: comprueba que el control tenga un número igual o mayor que el indicado.
+- ***Max***: comprueba que el control tenga un número igual o menor que el indicado.
+- ***MaxLength***: comprueba que el control tenga como máximo el número de caracteres indicado.
+- ***MinLenth***: comprueba que el control tenga como mínimo el número de caracteres indicado.
+- ***Pattern***:  comprueba que el campo cumpla con un patrón de correo válido.
+
+En nuestro ejemplo concreto, la validación de las contraseñas es de tipo **personalizado**, por lo que habrá de implementarse a través de un método de clase en particular. Lo único que se necesita es una función que reciba como argumento el control a validar. **El resultado debe ser un `null` si todo va bien**, y cualquier otra cosa si la validación no se cumple. En el código que se presenta a continuación como ejemplo estamos implementando un validador personalizado, que podrá usarse siempre que se quiera comprobar que dos campos de un formulario tengan el mismo contenido. Veamos más detalladamente:
 
 ```ts
-MustMatch(controlName: string, matchingControlName: string) {
-    // La función devuelta es el validador personalizado que será utilizado por el formulario reactivo
-    return (formGroup: FormGroup) => {
-        // Obtener los controles de los campos que se están comparando
-        const control = formGroup.controls[controlName];
-        const matchingControl = formGroup.controls[matchingControlName];
 
-        // Verificar si ya existe un error 'mustMatch' en matchingControl
-        if (matchingControl.errors && !matchingControl.errors.mustMatch) {
-            // Devolver si otro validador ya ha encontrado un error en matchingControl
-            return;
-        }
+mustMatch(controlName: string, matchingControlName: string) {
+  return (control: AbstractControl): ValidationErrors | null => {
+    const controlValue = control.get(controlName)?.value;
+    const matchingControlValue = control.get(matchingControlName)?.value;
 
-        // Establecer un error en matchingControl si la validación falla
-        if (control.value !== matchingControl.value) {
-            matchingControl.setErrors({ mustMatch: true });
-        } else {
-            // Eliminar el error si la validación es exitosa
-            matchingControl.setErrors(null);
-        }
-    };
+    if (controlValue !== matchingControlValue) {
+      return { mustMatch: true };
+    }
+    return { mustMatch: null };
+  };
 }
+
 ```
 
 Por último, para terminar el componente, habrá que añadir **tres funciones más que son necesarias para trabajar con la plantilla**. El código es el siguiente:
@@ -363,46 +399,89 @@ El código de la plantilla sería el siguiente:
 
 ```html
 <div class="container">
-
   <form (ngSubmit)="onSubmit()" [formGroup]="registerForm">
-
     <h3>Inicio de sesión - Formulario reactivo</h3>
 
     <label>Nombre</label>
-    <input type="text" formControlName="name" class="form-control" [ngClass]="{ 'is-invalid': f.name.errors }" />
-    <div *ngIf="f.name.errors" class="invalid-feedback">
-      <div *ngIf="f.name.errors.required">El nombre es obligatorio</div>
+    <input
+           type="text"
+           formControlName="name"
+           name="name"
+           class="form-control"
+           [ngClass]="{ 'is-invalid': f['name'].errors }"
+           autocomplete
+           />
+
+    <div *ngIf="f['name'].errors" class="invalid-feedback">
+      <div *ngIf="f['name'].errors['required']">El nombre es obligatorio</div>
+      <div *ngIf="f['name'].errors['minlength']">
+        El nombre ha de tener al menos 3 caracteres
+      </div>
     </div>
 
     <label>Email</label>
-    <input type="text" formControlName="email" class="form-control" [ngClass]="{ 'is-invalid': f.email.errors }" />
-    <div *ngIf="f.email.errors" class="invalid-feedback">
-      <div *ngIf="f.email.errors.required">El email es obligatorio</div>
-      <div *ngIf="f.email.errors.email">El email debe de ser válido</div>
+    <input
+           type="text"
+           formControlName="email"
+           name="email"
+           class="form-control"
+           [ngClass]="{ 'is-invalid': f['email'].errors }"
+           autocomplete
+           />
+    <div *ngIf="f['email'].errors" class="invalid-feedback">
+      <div *ngIf="f['email'].errors['required']">El email es obligatorio</div>
+      <div *ngIf="f['email'].errors['email']">El email debe de ser válido</div>
     </div>
 
     <label>Contraseña</label>
-    <input type="password" formControlName="password" class="form-control" [ngClass]="{ 'is-invalid': f.password.errors }" />
-    <div *ngIf="f.password.errors" class="invalid-feedback">
-      <div *ngIf="f.password.errors.required">Se requiere una contraseña</div>
-      <div *ngIf="f.password.errors.minlength">La contraseña tiene que tener al menos 6 caracteres</div>
+    <input
+           type="password"
+           formControlName="password"
+           name="password"
+           class="form-control"
+           [ngClass]="{ 'is-invalid': f['password'].errors }"
+           />
+
+    @if(f['password'].errors) { @if(f['password'].errors['required']) {
+    <div class="invalid-feedback">Es necesario introducir una contraseña</div>
+    } @if(!f['password'].errors['mustMatch']) {
+    <div class="invalid-feedback">Las contraseñas deben coincidir</div>
+    } @if(f['password'].errors['minlength']) {
+    <div class="invalid-feedback">
+      La contraseña tiene que tener al menos 8 caracteres
     </div>
+    } }
 
     <label>Repetir contraseña</label>
-    <input type="password" formControlName="repeatPass" class="form-control" [ngClass]="{ 'is-invalid': f.repeatPass.errors }" />
-    <div *ngIf="f.repeatPass.errors" class="invalid-feedback">
-      <div *ngIf="f.repeatPass.errors.required">Es necesario repetir contraseña</div>
-      <div *ngIf="f.repeatPass.errors.mustMatch">Las contraseñas deben de coincidir</div>
+    <input
+           type="password"
+           formControlName="repeatPass"
+           name="repeatPass"
+           class="form-control"
+           [ngClass]="{ 'is-invalid': f['repeatPass'].errors }"
+           />
+    @if(f['repeatPass'].errors) { @if(f['repeatPass'].errors['required']) {
+    <div class="invalid-feedback">Es necesario repetir contraseña</div>
+    } @if(!f['repeatPass'].errors['mustMatch']) {
+    <div class="invalid-feedback">Las contraseñas deben coincidir</div>
+    } @if(f['repeatPass'].errors['minlength']) {
+    <div class="invalid-feedback">
+      La contraseña tiene que tener al menos 8 caracteres
     </div>
+    } }
 
     <div class="text-center">
-      <button class="btn btn-primary mr-1" [disabled]="registerForm.invalid">Registro</button>
+      <button class="btn btn-primary mr-1" [disabled]="registerForm.invalid">
+        Registro
+      </button>
 
-      <button class="btn btn-secondary" type="reset" (click)="onReset()">Cancelar</button>
-
+      <button class="btn btn-secondary" type="reset" (click)="onReset()">
+        Cancelar
+      </button>
     </div>
   </form>
 </div>
+
 ```
 
 Vamos a comentar el código anterior:

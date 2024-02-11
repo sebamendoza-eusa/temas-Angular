@@ -1,14 +1,57 @@
 # Observables en Angular
 
-En Angular, los observables proporcionan un modo más para pasar mensajes entre partes de la aplicación. Se utilizan con frecuencia y son la técnica recomendada para el manejo de eventos, la programación asíncrona y el manejo de múltiples valores.
+## Programación reactiva vs. programación tradicional
 
-El patrón de observador **es un patrón de diseño de software** en el que un objeto, llamado *sujeto*, mantiene una lista de sus objetos dependientes, llamados *observadores*, y les notifica automáticamente los cambios de estado.
+Como ya se ha hablado en alguna ocasión durante el curso, en la *programación tradicional* las instrucciones se ejecutan una detrás de otra. Por tanto, si realizamos un cálculo con dos variables y obtenemos un resultado, aunque las variables usadas para hacer el cálculo cambien en el futuro, el cálculo ya se realizó y por tanto el resultado no cambiará.
 
-Los **observables son declarativos**, es decir, se define una función para publicar valores, pero no se ejecuta hasta que un consumidor se suscribe a ella. A continuación, el consumidor suscrito recibe notificaciones hasta que se completa la función o hasta que cancela la suscripción.
+```javascript
+let a = 1;
+let b = 3;
+let resultado = a + b; // resultado vale 4
+// Más tarde en las instrucciones... 
+a = 7; // Asignamos otro valor a la variable a
+// Aunque se cambie el valor de "a", resultado sigue valiendo 4,
+```
 
-Un observable puede entregar varios valores de cualquier tipo: literales, mensajes o eventos, según el contexto. La API para recibir valores es la misma si los valores se entregan de forma sincrónica o asincrónica. Dado que la lógica de configuración y desmontaje se controlan mediante el observable, el código de la aplicación solo tiene que preocuparse por suscribirse para consumir valores y, cuando haya terminado, cancelar la suscripción. Ya sea que la transmisión haya sido pulsaciones de teclas, una respuesta HTTP o un temporizador de intervalos, la interfaz para escuchar valores y dejar de escuchar es la misma.
+El anterior código ilustra el modo de trabajo de la programación tradicional **y la principal diferencia con respecto a la programación reactiva**. Aunque pueda parecer magia, **en programación reactiva la variable resultado habría actualizado su valor al alterarse las variables con las que se realizó el cálculo**.
 
-Debido a estas ventajas, los observables se utilizan ampliamente dentro de Angular y también se recomiendan para el desarrollo de aplicaciones en general.
+### Programación reactiva y los flujos de datos
+
+Para facilitar el cambio de comportamiento entre la programación tradicional y la programación reactiva, en ésta última se usan intensivamente los flujos de datos. **La programación reactiva es la programación con flujos de datos asíncronos**.
+
+En programación reactiva se pueden crear flujos (streams) a partir de cualquier cosa, como podría ser los valores que una variable tome a lo largo del tiempo. Todo puede ser un flujo de datos, como los clics sobre un botón, cambios en una estructura de datos, una consulta para traer un JSON del servidor, un feed RSS, el listado de tuits de las personas a las que sigues, etc.
+
+En la programación reactiva se tienen muy en cuenta esos flujos de datos, creando sistemas que son capaces de consumirlos de distintos modos, fijándose en lo que realmente les importa de estos streams y desechando lo que no. Para ello se dispone de diversas herramientas que permiten filtrar los streams, combinarlos, crear unos streams a partir de otros, etc. En última instancia, la programación reactiva se ocupa de lanzar diversos tipos de eventos sobre los flujos:
+
+- La aparición de algo interesante dentro de ese flujo
+- La aparición de un error en el stream
+- La finalización del stream
+
+Como programadores, mediante código, podemos especificar qué es lo que debe ocurrir cuando cualquiera de esos eventos se produzca.
+
+> Puedes obtener una introducción mucho más detallada en el artículo [The introduction to Reactive Programming you've been missing](https://gist.github.com/staltz/868e7e9bc2a7b8c1f754).
+
+## Observables y programación reactiva
+
+El patrón *observable* no es más que **un modo de implementación de la programación reactiva**, que básicamente pone en funcionamiento a diversos actores para producir los efectos deseados.
+
+Los componentes principales de este patrón son:
+
+- **Observable**: Es aquello que queremos observar, que será implementado mediante una colección de eventos o valores futuros. Un observable puede ser creado a partir de eventos de usuario derivados del uso de un formulario, una llamada HTTP, un almacén de datos, etc. Mediante el observable nos podemos suscribir a eventos que nos permiten hacer cosas cuando cambia lo que se esté observando.
+- **Observador**: Es el actor que se dedica a observar. Básicamente se implementa mediante una colección de funciones callback que nos permiten escuchar los eventos o valores emitidos por un observable. Las callbacks permitirán especificar código a ejecutar frente a un dato en el flujo, un error o el final del flujo.
+- **Sujeto**: es el emisor de eventos, que es capaz de crear el flujo de eventos cuando el observable sufre cambios. Esos eventos serán los que se consuman en los observadores.
+
+Existen diversas librerías para implementar programación reactiva que hacen uso del patrón observable. Una de ellas es **RxJS**, que es la que se usa en Angular.
+
+En conclusión: En Angular, **los observables proporcionan un modo más para pasar mensajes entre partes de la aplicación**. Se utilizan con frecuencia y son la técnica recomendada para el manejo de eventos, la programación asíncrona y el manejo de múltiples valores.
+
+## La librería RxJS
+
+***Reactive Extensions (Rx)*** es una librería desarrollada por Microsoft para implementar programación reactiva, creando aplicaciones que son capaces de usar el patrón observable para gestionar operaciones asíncronas. Por su parte RxJS es la implementación en JavaScript de *Reactive Extensions*.
+
+RxJS nos ofrece una base de código JavaScript muy interesante para programación reactiva, no solo para producir y consumir streams, sino también para manipularlos. Como es JavaScript la puedes usar en cualquier proyecto en este lenguaje, tanto del lado del cliente como del lado del servidor.
+
+Angular se apoya en RxJS para implementar la programación reactiva, permitiendo mejorar sensiblemente el desempeño de las aplicaciones que realicemos con este framework.
 
 ## Promesas y Observables.
 
@@ -29,47 +72,23 @@ Cuando sea necesario, se puede crear una instancia de la clase `Observable` que 
 
 Para ejecutar el observable que ha creado y comenzar a recibir notificaciones, ha de invocarse el método `subscribe()`, pasando un *observador*. Se trata de un objeto JavaScript que define cómo va a manejar las notificaciones que reciba. La llamada a `subscribe()` devuelve un objeto `Subscription`, que a su vez tiene un método `unsubscribe()`, al que se llama para dejar de recibir notificaciones.
 
-A continuación, se muestra un ejemplo de código que muestra cómo implementar un *observable* para proporcionar actualizaciones de geolocalización.
+A continuación, se muestra un ejemplo de código que muestra cómo implementar un *observable* muy sencillo:
 
 ```ts
-// Create an Observable that will start listening to geolocation updates
-// when a consumer subscribes.
-const locations = new Observable((observer) => {
-  let watchId: number;
+import { Observable } from 'rxjs';
 
-  // Simple geolocation API check provides values to publish
-  if ('geolocation' in navigator) {
-    watchId = navigator.geolocation.watchPosition((position: Position) => {
-      observer.next(position);
-    }, (error: PositionError) => {
-      observer.error(error);
-    });
-  } else {
-    observer.error('Geolocation not available');
-  }
+// Crear una función que devuelve un observable
+const miObservable = new Observable((observer) => {
+  // Lógica para notificar eventos al observador
+  observer.next('Hola');   // Emitir un valor
+  setTimeout(() => {
+    observer.next('Mundo');
+  }, 2000); // Emitir otro valor después de un tiempo
+  observer.complete(); // Indicar que el observable ha terminado
 
-  // When the consumer unsubscribes, clean up data ready for next subscription.
-  return {
-    unsubscribe() {
-      navigator.geolocation.clearWatch(watchId);
-    }
-  };
+  // Manejar un error (opcional)
+  // observer.error('Ocurrió un error');
 });
-
-// Call subscribe() to start listening for updates.
-const locationsSubscription = locations.subscribe({
-  next(position) {
-    console.log('Current Position: ', position);
-  },
-  error(msg) {
-    console.log('Error Getting Location: ', msg);
-  }
-});
-
-// Stop listening for location after 10 seconds
-setTimeout(() => {
-  locationsSubscription.unsubscribe();
-}, 10000);
 ```
 
 ## Definición de observadores
@@ -86,20 +105,20 @@ Un objeto observador puede definir cualquier combinación de estos controladores
 
 ## Suscribirse a un observable
 
-Una objeto del tipo `Observable` comienza a publicar valores solo cuando algo se suscribe a ella. La suscripción se realiza llamando al método `subscribe()` de la instancia y pasando un objeto observador para recibir las notificaciones.
+Una objeto del tipo `Observable` comienza a publicar valores solo cuando algo se suscribe a él. La suscripción se realiza llamando al método `subscribe()` de la instancia y pasando un objeto observador para recibir las notificaciones.
 
 > Para mostrar cómo funciona la suscripción, necesitamos crear un nuevo observable. Hay un constructor que se usa para crear nuevas instancias, pero a modo de ilustración, podemos usar algunos métodos de la biblioteca RxJS que crean observables simples de tipos de uso frecuente:
 >
 > - `of(...items)`: devuelve un objeto `Observable` que entrega de forma sincrónica los valores proporcionados como argumentos.
 > - ``from(iterable)`: convierte su argumento en un objeto `Observable`. Este método se usa comúnmente para convertir una matriz en un observable.
 
-A continuación, se muestra un ejemplo de creación y suscripción a un observable simple, con un observador que registra el mensaje recibido en la consola:
+A continuación, volvemos a mostrar otro ejemplo de creación de un observable, pero en esta ocasión añadimos la suscripción al mismo:
 
 ```ts
-// Create simple observable that emits three values
+// Creamos un observable que emite tres valores
 const myObservable = of(1, 2, 3);
 
-// Create observer object
+// Creamos el objeto observador
 const myObserver = {
   next: x => console.log('Observer got a next value: ' + x),
   error: err => console.error('Observer got an error: ' + err),

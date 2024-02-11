@@ -49,6 +49,12 @@ En un enlace de evento, Angular configura un controlador de eventos para el even
 
 Como en JS, un evento de destino determina las características del objeto `$event`. Si el evento de destino es un evento del propio DOM, entonces se producirá un [objeto de evento DOM](https://developer.mozilla.org/en-US/docs/Web/Events), con propiedades, por ejemplo, como `target` o `target.value`
 
+![angular 2 component data binding](H:\Mi unidad\Classroom\DAW-EC_PRE\apuntes\Angular\images\_MUVVuYjPS_01JoHwNvGKkctpOF3mbfiWx4yqGMKlkXPMl0dCx8ez9nbb72MeDeqnZZ-O8AxYw=s400)
+
+![angular 2 parent-child data binding](H:\Mi unidad\Classroom\DAW-EC_PRE\apuntes\Angular\images\uyVMPR1P3Uo9Ptf5rU99uJv1Suwbjbm0DlQtAbH0bnZgnQRZn6NOKss-YCixCZEMejQ3G2UcIw=s400)
+
+
+
 ## Enlace bidireccional
 
 El enlace bidireccional también posibilita a la aplicación una forma de compartir datos entre una clase de componente y la plantilla, pero con un matiz: Primero establece una propiedad de elemento específica y después escucha un evento de cambio de elemento.
@@ -58,20 +64,26 @@ La sintaxis de un enlace bidireccional es `[( ... )]` y combina los corchetes de
 Un caso de uso habitual del enlace bidireccional es el la directiva `NgModel`. Esta directiva permite mostrar un atributo y actualizarlo cuando el usuario hace determinados cambios. Por ejemplo:
 
 ```html
-
+<input [(ngModel)]="todo.subject">
 ```
 
-Puede verse más profundamente este concepto en el apartado de formularios con Angular
+En este caso, el valor de la propiedad fluye a la caja de *input* como en el caso *property binding*, pero los cambios del usuario también fluyen de vuelta al componente, actualizando el valor de dicha propiedad. Este concepto puede verse más detalladamente en el apartado de formularios con Angular
 
 ## Enlace de atributo
 
-Establece el valor de un atributo directamente con un **enlace de atributo**. Por lo general, lo normal es establecer una propiedad de elemento con un **enlace de propiedad**. Sin embargo, a veces no hay ninguna propiedad de elemento para vincular, por lo que se acude a este tipo de enlace
+en Angular, a menudo usamos la palabra "atributo" como sinónimo de "propiedad". En muchos casos podría valer meter todo en el mismo saco, pero lo cierto es que no siempre es lo mismo y Angular no trata a ambos de la misma manera. En el contexto de HTML entendemos atributo como los modificadores que acompañan a etiquetas y normalmente, cuando se escribe código HTML, existe una correspondencia directa entre lo que sería un atributo de HTML y lo que sería una propiedad del DOM. Por ejemplo el atributo "id" del HTML corresponde directamente con la propiedad "id" del objeto del DOM y por lo general, lo normal es establecer una propiedad de elemento con un **enlace de propiedad**. 
 
-La sintaxis de enlace de atributo se parece al enlace de propiedad, pero en lugar de una propiedad de elemento entre paréntesis, comienza con el prefijo `attr`, seguido de un punto (`.`) y el nombre del atributo. Luego establecerá el valor del atributo, utilizando una expresión que se resuelve en un tipo `string`, o eliminará el atributo cuando la expresión se resuelva en `null`.
+Pero existen atributos que no tienen un mapeo directo en el DOM, como es el caso de *colspan*. También existen atributos de HTML que mapean a propiedades del DOM que no se llaman ni funcionan igual, como *class* y *classList*.
 
-Uno de los casos de uso principales para el enlace de atributos es establecer atributos ARIA, como en este ejemplo:
+Es en estos casos donde se hace necesario usar el **enlace de atributo**. La sintaxis de enlace de atributo se parece al enlace de propiedad, pero en lugar de una propiedad de elemento entre paréntesis, comienza con el prefijo `attr`, seguido de un punto (`.`) y el nombre del atributo. Luego establecerá el valor del atributo, utilizando una expresión que se resuelve en un tipo `string`, o eliminará el atributo cuando la expresión se resuelva en `null`.
+
+Un ejemplo interesante de uso son los denominados *data attribute*, los cuales no tienen mapeo a propiedades. En estos casos, si queremos enlazar a un *data attribute* del HTML5, tendremos que hacerlo con la sintaxis de un enlace de atributo. Mira el ejemplo siguiente:
 
 ```html
-<!-- create and set an aria attribute for assistive technology -->
-<button [attr.aria-label]="actionName">{{actionName}} with Aria</button>
+<div [attr.data-cliente]="cliente.nombre">{{cliente.nombre}}</div>
 ```
+
+Aquí asignamos al atributo `data-cliente` el valor de la propiedad *nombre* del objeto *cliente* definido en el componente correspondiente.
+
+
+

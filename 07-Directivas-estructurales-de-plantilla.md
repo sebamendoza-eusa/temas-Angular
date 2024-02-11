@@ -4,7 +4,7 @@ A partir de la versión 17 Angular ha introducido nuevas formas de controlar el 
 
 Ya conocemos la estructura `*ngIf` para el renderizado condicional en nuestras plantillas, ahora se tiene una estructura más parecida a la sintaxis de JavaScript que nos permitirá tener esta misma funcionalidad en nuestras plantillas. Es una estructura con sintaxis de bloque, y con ella el compilador de angular la transforma en instrucciones de JavaScript.
 
-¿Por qué son más interesantes estas nuevas estructuras? Por las siguientes razones
+¿Por qué son más interesantes estas nuevas estructuras? Por las siguientes razones:
 
 - Sintaxis más parecida a JavaScript, lo que hace que sea más familiar su uso
 - Su uso está automáticamente disponible sin realizar importaciones adicionales
@@ -28,7 +28,7 @@ Vamos a ver un ejemplo del cambio en el control de flujo. Hasta la versión 17, 
 </ng-template>
 ```
 
-En este caso tenemos un código que dependiendo del valor de `showTable` mostrará o no la tabla html.
+En este caso tenemos un código que dependiendo del valor de `showTable` mostrará o no la tabla HTML.
 
 Con las nuevas estructuras, el código quedaría como sigue:
 
