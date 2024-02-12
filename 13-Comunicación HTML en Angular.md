@@ -71,7 +71,7 @@ Una cuestión muy importante es la definición del método `getData` como un `Ob
 
 #### Consumir el servicio en un componente
 
-Una vez creado el servicio, lo siguiente es consumirlo en un componente determinado a través de una *inyección de dependencia*. Para ello será necesario importar en la cabecera del componente el servicio en cuestión, así como la interface que fuese necesaria.
+Una vez creado el servicio, lo siguiente es consumirlo en un componente determinado. Esto lo haremos a través de una *inyección de dependencia*. Para ello será necesario importar en la cabecera del componente el servicio en cuestión, así como la interface que fuese necesaria.
 
 Un ejemplo de código de componente consumidor del servicio anterior sería algo como lo siguiente:
 
@@ -87,13 +87,87 @@ import { dataInterface } from "../dataInterface";
   templateUrl: './verData.component.html',
   styleUrl: './verData.component.css'
 })
-export class VerDataComponent implements OnInit {
+ex
+port class VerDataComponent implements OnInit {
   public data: dataInterface = { /* definir propiedades */ };
+  
   constructor(private apiservice: ApiService) {} // Inyector del servicio en el objeto apiservice
 
   ngOnInit(): void {
-    this.apiservice.getFrase().subscribe(data => (this.data = data));
+    this.apiservice.getData().subscribe(data => (this.data = data));
   }
 }
+```
+
+Vemos cómo a través del constructor inyectamos el servicio `ApiService`, para después, en la sección `ngOnInit()` usar sus métodos.
+
+Como el servicio se ha configurado como un observable, tendremos que usar el método `subscribe()` con la correspondiente función *callback*. Así conseguimos un comportamiento reactivo y que el método `getData()` recoja de manera asíncrona los cambios en el flujo de datos.
+
+### Usar el JSON Server
+
+El proceso de conexión a una API REST que hemos descrito en el apartado anterior puede funcionar en situaciones donde estemos interesados en consumir datos en modo lectura. Sin embargo, lo normal es que también tengamos que desarrollar mecanismos de escritura y actualización de los datos en el servidor. Para ello tendremos que tener un backend que lo permita. Angular incorpora un servidor JSON de desarrollo que nos permite emular un backend sencillo y poder implementar todos los métodos habituales en una conexión HTTP. Podemos instalar este servidor desde el Angular CLI del modo siguiente:
+
+```powershell
+npm install -g json-server
+```
+
+Una vez que tengamos instalado el componente, lo único que necesitaremos es definir un fichero `db.json` que contenga los datos con los que vamos a trabajar. Un ejemplo de este fichero podría ser el siguiente:
+
+```json
+{
+    "articulos": [
+      {
+        "codigo": 1,
+        "descripcion": "patata",
+        "precio": 12.33
+      },
+      {
+        "codigo": 2,
+        "descripcion": "manzana",
+        "precio": 54.25
+      },
+      {
+        "codigo": 3,
+        "descripcion": "sandía",
+        "precio": 14.67
+      }
+    ]
+}
+```
+
+Si ahora ejecutamos en la consola el siguiente comando:
+
+```powershell
+json-server --watch db.json
+```
+
+Tendremos disponible el servidor JSON en la URL local http://localhost:3000/articulos
+
+> Puedes encontrar más información sobre el servidor de desarrollo JSON proporcionado por Angular aquí: https://www.npmjs.com/package/json-server
+
+A partir de aquí podríamos de nuevo configurar un servicio de conexión a esta API REST cambiando la URL de conexión.
+
+También sería interesante implementar el resto de métodos propios de un CRUD en el servicio para completar la funcionalidad de la aplicación. En el siguiente código, y siguiendo con el ejemplo anterior, tienes una muestra para ver como podrían implementarse el resto de funcionalidades
+
+```javascript
+
+// Ver todos los artículos
+public getArticulos(): Observable<any> {
+  return this.http.get<any>(this.urlBase); // se implementa un método GET en una URL
+}
+
+// borrar un registro
+  deletePost(id:number){
+    this.postService.delete(id).subscribe(res => {
+         this.posts = this.posts.filter(item => item.id !== id);
+    })
+    
+    
+public getEmployeeDetailById(model: any): Observable<any> {
+  return this.webApiService.get(httpLink.getEmployeeDetailById + '?employeeId=' + model);
+}
+public saveEmployee(model: any): Observable<any> {
+  return this.webApiService.post(httpLink.saveEmployee, model);
+}  
 ```
 
