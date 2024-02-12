@@ -117,17 +117,17 @@ Una vez que tengamos instalado el componente, lo único que necesitaremos es def
 {
     "articulos": [
       {
-        "codigo": 1,
+        "id": "1",
         "descripcion": "patata",
         "precio": 12.33
       },
       {
-        "codigo": 2,
+        "id": "2",
         "descripcion": "manzana",
         "precio": 54.25
       },
       {
-        "codigo": 3,
+        "id": "3",
         "descripcion": "sandía",
         "precio": 14.67
       }
@@ -135,39 +135,71 @@ Una vez que tengamos instalado el componente, lo único que necesitaremos es def
 }
 ```
 
+Es importante que el atributo clave tenga el nombre `“id”`, si no json-server no lo reconocerá al menos que lo declares en la ejecución del servidor. También es necesario que `db.json` se ubique **en la raíz del proyecto**.
+
 Si ahora ejecutamos en la consola el siguiente comando:
 
 ```powershell
 json-server --watch db.json
 ```
 
-Tendremos disponible el servidor JSON en la URL local http://localhost:3000/articulos
+Tendremos disponible el servidor JSON en la URL local https://localhost:3000/articulos
 
 > Puedes encontrar más información sobre el servidor de desarrollo JSON proporcionado por Angular aquí: https://www.npmjs.com/package/json-server
 
 A partir de aquí podríamos de nuevo configurar un servicio de conexión a esta API REST cambiando la URL de conexión.
 
-También sería interesante implementar el resto de métodos propios de un CRUD en el servicio para completar la funcionalidad de la aplicación. En el siguiente código, y siguiendo con el ejemplo anterior, tienes una muestra para ver como podrían implementarse el resto de funcionalidades
+También sería interesante implementar el resto de métodos propios de un CRUD en el servicio para completar la funcionalidad de la aplicación. A continuación tienes un ejemplo de código aplicado al caso del almacén de artículos que hemos definido más arriba
 
-```javascript
+```tsx
+import { Injectable } from '@angular/core';
+import { Articulo } from '../modelo/articulo';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { Observable, map } from 'rxjs';
 
-// Ver todos los artículos
-public getArticulos(): Observable<any> {
-  return this.http.get<any>(this.urlBase); // se implementa un método GET en una URL
+const headerOptions = {
+  headers: new HttpHeaders({ 'Content-Type': 'application/json' }),
+};
+
+@Injectable({
+  providedIn: 'root',
+})
+export class ApiServiceService {
+  listaArticulos: Articulo[] = [];
+
+  articuloActual: Articulo = {
+    id: '',
+    descripcion: '',
+    precio: 0,
+  };
+
+  apiURL: string =
+  'https://localhost:3000/articulos';
+
+  constructor(private http: HttpClient) {}
+
+  public getListaArticulos() {
+    return this.http.get<Articulo[]>(this.apiURL);
+  }
+
+  public deleteArticulo(id: string): Observable<string> {
+    return this.http
+      .delete(`${this.apiURL}/${id}`, { responseType: 'text' })
+      .pipe(map(() => 'Borrado de registro realizado'));
+  }
+
+  public createArticulo(nuevoArticulo: Articulo): Observable<any> {
+    return this.http.post(this.apiURL, nuevoArticulo);
+  }
+
+  public updateArticulo(id: string, articuloActualizado: any): Observable<any> {
+    return this.http.put(`${this.apiURL}/${id}`, articuloActualizado);
+  }
+
+  public viewArticulo(id: string): Observable<any> {
+    return this.http.get(`${this.apiURL}/${id}`);
+  }
 }
-
-// borrar un registro
-  deletePost(id:number){
-    this.postService.delete(id).subscribe(res => {
-         this.posts = this.posts.filter(item => item.id !== id);
-    })
-    
-    
-public getEmployeeDetailById(model: any): Observable<any> {
-  return this.webApiService.get(httpLink.getEmployeeDetailById + '?employeeId=' + model);
-}
-public saveEmployee(model: any): Observable<any> {
-  return this.webApiService.post(httpLink.saveEmployee, model);
-}  
 ```
 
+El código anterior implementaría un servicio CRUD para ser consumido por los componentes de nuestra aplicación y mantener los cambios en `db.json`
